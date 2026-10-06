@@ -8,7 +8,7 @@ stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
 cp "$R/port/Remnants of Naezith.sh" "$stage/"
 cp -r "$R/port/naezith" "$stage/"
-rm -rf "$stage/naezith/gamedata" "$stage/naezith/log.txt"
+rm -rf "$stage/naezith/gamedata" "$stage/naezith/log.txt" "$stage/naezith/log.prev.txt"
 mkdir "$stage/naezith/gamedata"
 cp "$R/port/naezith/gamedata/Put Linux game files here" "$stage/naezith/gamedata/"
 cp "$R/port/port.json" "$R/port/gameinfo.xml" "$R/port/screenshot.png" "$R/port/cover.png" "$stage/naezith/"

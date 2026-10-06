@@ -12,3 +12,4 @@ __pycache__/
 port/naezith/glxfix/libglxfix.so
 port/naezith/box64/box64-x86_64-linux-gnu/libstdc++.so.6
 port/naezith/box64/box64-x86_64-linux-gnu/libgcc_s.so.1
+port/naezith/*.prev.txt
