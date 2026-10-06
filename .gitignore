@@ -1,0 +1,14 @@
+# Built by build/build.sh (sources and build recipe are in the repo)
+port/naezith/box64/box64
+build/src/
+# Game files are never part of the repo
+port/naezith/gamedata/*
+!port/naezith/gamedata/Put Linux game files here
+port/naezith/log.txt
+# Test output and packages
+tests/out/
+*.zip
+__pycache__/
+port/naezith/glxfix/libglxfix.so
+port/naezith/box64/box64-x86_64-linux-gnu/libstdc++.so.6
+port/naezith/box64/box64-x86_64-linux-gnu/libgcc_s.so.1
