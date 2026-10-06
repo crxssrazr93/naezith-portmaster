@@ -101,6 +101,13 @@ if [ "${DISPLAY_HEIGHT:-480}" -le 480 ] && [ ! -f "$GAMEDIR/.view_height_set" ];
   touch "$GAMEDIR/.view_height_set"
 fi
 
+# The leaderboards are offline on handhelds, and the game says so in large red text on the title
+# screen in every language; blank those two strings (tip from a tester).
+for lang in "$DATADIR"/data/lang/*.json; do
+  grep -qE '"offline_mode(_warning)?": *"[^"]' "$lang" &&
+    sed -i -E 's/("offline_mode(_warning)?": *)"[^"]*"/\1""/' "$lang"
+done
+
 # glxfix works around crusty answering SFML's visual queries wrongly (see glxfix/glxfix.c).
 # westonwrap replaces XDG_RUNTIME_DIR; pass the real one on so OpenAL can reach PipeWire for sound.
 REAL_XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
