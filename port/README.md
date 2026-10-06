@@ -32,6 +32,10 @@ Bindings can be changed in Settings, Controls. Select + Start exits.
 * On 4:3 screens a few menu labels overlap.
 * `steamstub/` only reports Steam as running and does no license checks.
 
+## Reporting problems
+
+Please send `ports/naezith/log.txt`. `log.txt` is rewritten on every start, so copy it right after the problem happens. Lines starting with `PORT:` list the device, firmware, screen, memory and swap, the game version, and at the end how long the game ran and whether the system ran out of memory.
+
 ## Thanks
 
 Tolga Ay for the game, ptitSeb for [box64](https://github.com/ptitSeb/box64) and [gl4es](https://github.com/ptitSeb/gl4es), binarycounter for [Westonpack](https://github.com/binarycounter/Westonpack/wiki) and the Steam stub this port's stub is based on (from Papers, Please), and the PortMaster team.

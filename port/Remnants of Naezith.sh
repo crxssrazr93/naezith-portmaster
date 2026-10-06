@@ -26,6 +26,11 @@ KNOWN_MD5="f18add699bbc6c73a8521438139ac147"
 cd "$GAMEDIR"
 
 > "$GAMEDIR/log.txt" && exec > >(tee "$GAMEDIR/log.txt") 2>&1
+# Device, system and memory details for bug reports (tools/portlog.sh)
+# The files a bug report needs; named in log.txt and on screen only when something fails
+export PORT_REPORT_FILES="ports/naezith/log.txt"
+source "$GAMEDIR/tools/portlog.sh"
+port_header "Remnants of Naezith launcher"
 
 if [ ! -f "$DATADIR/$BINARY" ]; then
   pm_message "Game files missing. Copy the Linux Steam build of Remnants of Naezith into ports/naezith/gamedata (see README)."
@@ -34,7 +39,9 @@ if [ ! -f "$DATADIR/$BINARY" ]; then
 fi
 
 if [ "$(md5sum "$DATADIR/$BINARY" | cut -d' ' -f1)" != "$KNOWN_MD5" ]; then
-  echo "Warning: unknown game version, this port was tested with the 22.03.2024 Linux build."
+  port_log "WARNING: unknown game version (md5 $(md5sum "$DATADIR/$BINARY" | cut -c1-32)), this port was tested with the 22.03.2024 Linux build"
+else
+  port_log "game version: 22.03.2024 Linux build (md5 matches)"
 fi
 
 # Tidy up gamedata: the bundled libm and libstdc++ break on newer systems (the game's own
@@ -61,6 +68,7 @@ if [[ "$PM_CAN_MOUNT" != "N" ]]; then
   $ESUDO umount "${weston_dir}"
 fi
 $ESUDO mount "$controlfolder/libs/${weston_runtime}.squashfs" "${weston_dir}"
+port_mounted "$weston_runtime" "$weston_dir/westonwrap.sh"
 
 # rocknix mode on rocknix panfrost/freedreno; libmali not supported
 if [[ "$CFW_NAME" = "ROCKNIX" ]]; then
@@ -97,13 +105,16 @@ fi
 # westonwrap replaces XDG_RUNTIME_DIR; pass the real one on so OpenAL can reach PipeWire for sound.
 REAL_XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 
+port_log "starting the game"
 $ESUDO env \
+BOX64_SHOWSEGV=1 BOX64_SHOWBT=1 \
 BOX64_LD_LIBRARY_PATH="$GAMEDIR/steamstub:$DATADIR/lib:$GAMEDIR/box64/box64-x86_64-linux-gnu" \
 BOX64_LD_PRELOAD="$GAMEDIR/steamstub/libsteam_api.so:$GAMEDIR/glxfix/libglxfix.so" \
 $weston_dir/westonwrap.sh headless noop kiosk crusty_glx_gl4es \
 XDG_RUNTIME_DIR="$REAL_XDG_RUNTIME_DIR" $GAMEDIR/box64/box64 ./$BINARY
 
 # Clean up after ourselves
+port_exit
 $ESUDO $weston_dir/westonwrap.sh cleanup
 if [[ "$PM_CAN_MOUNT" != "N" ]]; then
   $ESUDO umount "${weston_dir}"
