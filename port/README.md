@@ -25,6 +25,7 @@ Bindings can be changed in Settings, Controls. Select + Start exits.
 
 ## Notes
 
+* On 1 GB devices turn on zram (or swap) in your firmware's settings, so the game does not run out of memory.
 * On 480 line screens the port sets View Height (Settings, Graphics) to 720 on first start, so the level and its text are larger. Raise it to see more of the level.
 * Runs through box64 and Westonpack with gl4es. Saves are in `gamedata/data/user`.
 * Online rankings are unavailable, the game runs in offline mode.
