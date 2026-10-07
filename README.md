@@ -6,7 +6,8 @@ The port runs the game's own x86_64 Linux build. No game files are included: you
 
 | | |
 |--|--|
-| Status | Runs on an Anbernic RG35XX H (Knulli): about 37 fps in levels, 60 in menus, sound and controls working. Other devices untested. |
+| Status | Runs on an Anbernic RG35XX H (Knulli): about 37 fps in levels, 60 in menus, sound and controls working. |
+| Tester reports | Works on an RG40XX-H (muOS) and an R36S (dArkOS), controls as expected. |
 | Target | aarch64 PortMaster devices (Knulli, muOS, ROCKNIX, ArkOS and others), 1 GB RAM or more |
 | Runtimes | Westonpack (`weston_pkg_0.2`), bundled box64 |
 | Memory | about 600 MB on the device (box64, gl4es and the GPU share RAM), about 190 MB natively on a PC |
