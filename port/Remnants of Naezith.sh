@@ -92,8 +92,10 @@ cd "$DATADIR"
 mkdir -p "$DATADIR/replays/import" "$DATADIR/screenshots"
 
 # The game's View Height (Settings, Graphics) defaults to 1080, which leaves the level and its text
-# tiny on 480 line screens. Set 720 once; a value chosen in the game later is kept.
-if [ "${DISPLAY_HEIGHT:-480}" -le 480 ] && [ ! -f "$GAMEDIR/.view_height_set" ]; then
+# tiny on 480 line screens. Set 720 once; a value chosen in the game later is kept. The marker sits
+# next to the settings (older releases kept it in the port folder), so it travels with them.
+if [ "${DISPLAY_HEIGHT:-480}" -le 480 ] && [ ! -f "$DATADIR/data/user/.view_height_set" ] &&
+   [ ! -f "$GAMEDIR/.view_height_set" ]; then
   cfg="$DATADIR/data/user/settings.cfg"
   if [ -f "$cfg" ]; then
     sed -i 's/"default_view_height": *[0-9.]*/"default_view_height": 720.0/' "$cfg"
@@ -101,7 +103,7 @@ if [ "${DISPLAY_HEIGHT:-480}" -le 480 ] && [ ! -f "$GAMEDIR/.view_height_set" ];
     mkdir -p "$(dirname "$cfg")"
     printf '{\n    "settings": {\n        "default_view_height": 720.0\n    }\n}\n' > "$cfg"
   fi
-  touch "$GAMEDIR/.view_height_set"
+  touch "$DATADIR/data/user/.view_height_set"
 fi
 
 # The leaderboards are offline on handhelds, and the game says so in large red text on the title

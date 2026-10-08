@@ -95,6 +95,10 @@ What failed on the device and why:
 6. **gptokeyb2 with a gptokeyb 1 config.** The launcher now uses gptokeyb, and gptokeyb2 only on muOS, where gptokeyb is known to be unresponsive.
 7. **Test tooling on the device.** `fbgrab` shows plain white for GL output, so screenshots come from a raw `/dev/fb0` dump. gl4es's `LIBGL_FPS` and crusty's `CRUSTY_FPS` do not count these frames, but the framebuffer pan register changes once per presented frame. Injected button presses must use the device's own key codes (an injector using standard gamepad codes pressed the wrong buttons, which made the exit hotkey look broken).
 
+### View height marker
+
+The launcher sets View Height 720 once on 480 line screens and leaves the player's later choice alone. Its marker (`.view_height_set`) used to sit in the port folder while the setting lives in `gamedata/data/user/settings.cfg`, so a fresh port folder with the player's copied game data reset their choice to 720. The marker now sits next to the settings; a marker from an older release still counts.
+
 ## 7. Still to do
 
 * Test on other devices: ROCKNIX with Panfrost, muOS, ArkOS, and screens other than 640x480.
