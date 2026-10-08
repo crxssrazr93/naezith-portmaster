@@ -41,7 +41,7 @@ The stub contains no ownership or license checks and the game has no DRM to bypa
 
 1. Checks that the game binary is present and warns on an unknown MD5 (other versions may work).
 2. Renames `lib/libm.so.6`, `lib/libstdc++.so.6` and `lib/libsteam_api.so` to `*.disabled`. The first two are older than the device's and break symbol resolution (the game's own `naezith.sh` drops them too); the third is replaced by the stub.
-3. Mounts `weston_pkg_0.2` and starts `westonwrap.sh headless noop kiosk crusty_glx_gl4es` with box64 and the game, with `BOX64_LD_LIBRARY_PATH` set to the stub first, then the game's libraries, then the bundled x86 libraries, and `BOX64_LD_PRELOAD` set to the stub.
+3. Mounts `weston_pkg_0.2` and starts `westonwrap.sh headless noop kiosk crusty_glx_gl4es` with box64 and the game, with `BOX64_LD_LIBRARY_PATH` (passed as a `VAR=value` argument to westonwrap) set to the stub first, then the game's libraries, then the bundled x86 libraries, and `BOX64_LD_PRELOAD` set to the stub.
 4. gptokeyb2 only supplies the PortMaster exit hotkey (Select + Start); the game reads the controller itself.
 
 ## 3. Testing approach
@@ -104,3 +104,5 @@ The launcher sets View Height 720 once on 480 line screens and leaves the player
 * Test on other devices: ROCKNIX with Panfrost, muOS, ArkOS, and screens other than 640x480.
 * If it runs slowly, the game's own settings (`fps_cap`, `render_parallax_layers`, `render_rgb_split`, `vsync` in `data/user/settings.cfg`) are the first things to try.
 * Confirm on ROCKNIX with Panfrost.
+
+**ROCKNIX: "BOX64 Error: Loading needed libs".** ROCKNIX exports its own `BOX64_LD_LIBRARY_PATH=/usr/share/box64/lib`, and on a ROCKNIX x55 (libmali) the game started with that value instead of the port's, even though the launcher set it on `westonwrap.sh`'s environment (westonwrap sources PortMaster's control files again before it starts the game). box64 then could not find the game's x86 libraries. The launcher now passes the box64 settings as `VAR=value` arguments to `westonwrap.sh`, which applies them to the game's command itself, and sets `BOX64_LOG=1` so a log names any library that still fails to load.

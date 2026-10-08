@@ -117,13 +117,16 @@ done
 # westonwrap replaces XDG_RUNTIME_DIR; pass the real one on so OpenAL can reach PipeWire for sound.
 REAL_XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 
+# box64's settings go to westonwrap as VAR=value arguments, which it puts on the game's command
+# line: westonwrap sources PortMaster's control files first, and on ROCKNIX the game then started
+# with the firmware's BOX64_LD_LIBRARY_PATH (/usr/share/box64/lib) instead of the port's, so box64
+# could not find the game's libraries. BOX64_LOG=1 names a library that fails to load.
 port_log "starting the game"
-$ESUDO env \
-BOX64_SHOWSEGV=1 BOX64_SHOWBT=1 \
-BOX64_LD_LIBRARY_PATH="$GAMEDIR/steamstub:$DATADIR/lib:$GAMEDIR/box64/box64-x86_64-linux-gnu" \
-BOX64_LD_PRELOAD="$GAMEDIR/steamstub/libsteam_api.so:$GAMEDIR/glxfix/libglxfix.so" \
-$weston_dir/westonwrap.sh headless noop kiosk crusty_glx_gl4es \
-XDG_RUNTIME_DIR="$REAL_XDG_RUNTIME_DIR" $GAMEDIR/box64/box64 ./$BINARY
+$ESUDO $weston_dir/westonwrap.sh headless noop kiosk crusty_glx_gl4es \
+  BOX64_LOG=1 BOX64_SHOWSEGV=1 BOX64_SHOWBT=1 \
+  BOX64_LD_LIBRARY_PATH="$GAMEDIR/steamstub:$DATADIR/lib:$GAMEDIR/box64/box64-x86_64-linux-gnu" \
+  BOX64_LD_PRELOAD="$GAMEDIR/steamstub/libsteam_api.so:$GAMEDIR/glxfix/libglxfix.so" \
+  XDG_RUNTIME_DIR="$REAL_XDG_RUNTIME_DIR" $GAMEDIR/box64/box64 ./$BINARY
 
 # Clean up after ourselves
 port_exit
