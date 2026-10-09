@@ -30,6 +30,7 @@ Bindings can be changed in Settings, Controls. Select + Start exits.
 * Runs through box64 and Westonpack with gl4es. Saves are in `gamedata/data/user`.
 * Online rankings are unavailable, the game runs in offline mode.
 * Needs Panfrost on Rocknix.
+* On pads whose D-pad sends buttons instead of a hat (the RG552 on AmberELEC), the port maps the D-pad to the arrow keys and Start to Escape (Pause).
 * On 4:3 screens a few menu labels overlap.
 * `steamstub/` only reports Steam as running and does no license checks.
 

@@ -28,7 +28,10 @@ cd "$GAMEDIR"
 
 # the previous run's log is kept as log.prev.txt
 mv -f "$GAMEDIR/log.txt" "$GAMEDIR/log.prev.txt" 2>/dev/null
-> "$GAMEDIR/log.txt" && exec > >(tee "$GAMEDIR/log.txt") 2>&1
+# tee gets a relative path: gptokeyb's exit hotkey runs pkill -f naezith, which matches every
+# command line containing the word, and a tee writing to .../naezith/log.txt died with the game,
+# ending the log and then the launcher (AmberELEC reports that exit as an error)
+> "$GAMEDIR/log.txt" && exec > >(tee log.txt) 2>&1
 # Device, system and memory details for bug reports (tools/portlog.sh)
 # The files a bug report needs; named in log.txt and on screen only when something fails
 export PORT_REPORT_FILES="ports/naezith/log.txt"
@@ -79,11 +82,40 @@ if [[ "$CFW_NAME" = "ROCKNIX" ]]; then
 fi
 
 # The game reads the controller natively (SFML joystick); gptokeyb only provides the exit hotkey.
+# Two pad layouts the game cannot read, seen on the RG552 under AmberELEC; the first joystick's
+# capability bitmaps decide, and gptokeyb covers them with the game's keyboard controls:
+# - no hat axes: the D-pad sends buttons, but the game reads the D-pad from the hat only, so the
+#   D-pad is mapped to the arrow keys (move and menus)
+# - no BTN_START: Start is a later button and the game's Pause (button 7) lands on R2, so Start is
+#   mapped to Escape (Pause in game, Back in menus)
+gptk="$GAMEDIR/naezith.gptk"
+pad_map=""
+for ev in /sys/class/input/event*/device; do
+  [ -d "$ev/js0" ] || continue
+  abs="$(awk '{ print $NF }' "$ev/capabilities/abs" 2>/dev/null)"
+  if [ $(( 0x${abs:-0} & 0x10000 )) -eq 0 ]; then
+    pad_map+='s/^up = .*/up = up/;s/^down = .*/down = down/;s/^left = .*/left = left/;s/^right = .*/right = right/;'
+    port_log "the pad has no hat axes, so the D-pad is mapped to the arrow keys"
+  fi
+  # BTN_START is 0x13b: bit 59 of the fifth 64 bit word, counted from the end of the bitmap
+  keys=($(cat "$ev/capabilities/key" 2>/dev/null))
+  word=0
+  [ ${#keys[@]} -ge 5 ] && word="${keys[${#keys[@]} - 5]}"
+  if [ $(( (0x$word >> 59) & 1 )) -eq 0 ]; then
+    pad_map+='s/^start = .*/start = esc/;'
+    port_log "the pad has no BTN_START, so Start is mapped to Escape"
+  fi
+  break
+done
+if [ -n "$pad_map" ]; then
+  sed "$pad_map" "$gptk" > "$GAMEDIR/naezith.pad.gptk"
+  gptk="$GAMEDIR/naezith.pad.gptk"
+fi
 # gptokeyb1 is unresponsive on muOS, where gptokeyb2 is used instead (as in the Dicey Dungeons port)
 if [ "$CFW_NAME" = "muOS" ] && [ -n "$GPTOKEYB2" ]; then
-  $GPTOKEYB2 "$BINARY" -c "$GAMEDIR/naezith.gptk" &
+  $GPTOKEYB2 "$BINARY" -c "$gptk" &
 else
-  $GPTOKEYB "$BINARY" -c "$GAMEDIR/naezith.gptk" &
+  $GPTOKEYB "$BINARY" -c "$gptk" &
 fi
 pm_platform_helper "$GAMEDIR/box64/box64"
 
