@@ -27,7 +27,7 @@ cat > "$ROOT/weston/westonwrap.sh" <<EOW
 #!/bin/bash
 [ "\$1" = cleanup ] && { echo WESTON_CLEANUP; exit 0; }
 echo "WESTONWRAP args: \$1 \$2 \$3 \$4"; shift 4
-unset WAYLAND_DISPLAY; Xvfb :$D -screen 0 640x480x24 -nolisten tcp >/dev/null 2>&1 & XP=\$!
+unset WAYLAND_DISPLAY; export SDL_VIDEODRIVER=x11 XDG_RUNTIME_DIR=/tmp/xdg-offscreen; mkdir -p -m 700 /tmp/xdg-offscreen; Xvfb :$D -screen 0 640x480x24 -nolisten tcp >/dev/null 2>&1 & XP=\$!
 for i in \$(seq 40); do DISPLAY=:$D xdpyinfo >/dev/null 2>&1 && break; sleep 0.5; done
 DISPLAY=:$D LIBGL_ES=2 LIBGL_GL=21 LD_LIBRARY_PATH="$GL4ES_LIB" env "\$@"   # args after the mode are VAR=value pairs, then the command
 kill \$XP; wait \$XP

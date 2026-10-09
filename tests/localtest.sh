@@ -19,8 +19,9 @@ OUT="$R/tests/out/$TAG"; mkdir -p "$OUT"; rm -f "$OUT"/*.png "$OUT"/*.mp4
 LIBS="$R/tests/out/lib"; rm -rf "$LIBS"; mkdir -p "$LIBS"
 for f in "$GAME_DIR"/lib/*; do case "$(basename "$f")" in libm.so.6|libstdc++.so.6|libsteam_api.so) ;; *) ln -s "$f" "$LIBS/";; esac; done
 while [ -e "/tmp/.X$D-lock" ]; do sleep 0.5; done
-unset WAYLAND_DISPLAY; Xvfb :$D -screen 0 "$RES"x24 -nolisten tcp >/dev/null 2>&1 & XPID=$!
+unset WAYLAND_DISPLAY; export SDL_VIDEODRIVER=x11 XDG_RUNTIME_DIR=/tmp/xdg-offscreen; mkdir -p -m 700 /tmp/xdg-offscreen; Xvfb :$D -screen 0 "$RES"x24 -nolisten tcp >/dev/null 2>&1 & XPID=$!
 for i in $(seq 40); do DISPLAY=:$D xdpyinfo >/dev/null 2>&1 && break; sleep 0.5; done
+DISPLAY=:$D xdpyinfo >/dev/null 2>&1 || { echo "offscreen X server :$D did not start"; kill $XPID 2>/dev/null; exit 1; }
 before=$(ls /dev/input/)
 REC_CMD="ffmpeg -y -loglevel error -f x11grab -framerate 30 -video_size $RES -i :$D -c:v libx264 -preset ultrafast $OUT/{name}.mp4" \
 SHOT_CMD="DISPLAY=:$D import -window root $OUT/{name}.png 2>/dev/null" \
