@@ -1,6 +1,6 @@
 #!/bin/bash
 # Device-like test on an x86_64 Linux PC: the game's own x86_64 binary with gl4es (GLES 2.0
-# backend, like the handheld), the Steam stub, a rootful Xwayland at a handheld resolution and
+# backend, like the handheld), the Steam stub, a an offscreen Xvfb server (no window on the desktop) at a handheld resolution and
 # a scripted virtual gamepad (tests/vpad.py). The game runs inside bwrap with only the virtual
 # pad visible under /dev/input, so it is joystick 0 as on a handheld.
 #
@@ -19,7 +19,7 @@ OUT="$R/tests/out/$TAG"; mkdir -p "$OUT"; rm -f "$OUT"/*.png "$OUT"/*.mp4
 LIBS="$R/tests/out/lib"; rm -rf "$LIBS"; mkdir -p "$LIBS"
 for f in "$GAME_DIR"/lib/*; do case "$(basename "$f")" in libm.so.6|libstdc++.so.6|libsteam_api.so) ;; *) ln -s "$f" "$LIBS/";; esac; done
 while [ -e "/tmp/.X$D-lock" ]; do sleep 0.5; done
-Xwayland :$D -geometry "$RES" -decorate >/dev/null 2>&1 & XPID=$!
+unset WAYLAND_DISPLAY; Xvfb :$D -screen 0 "$RES"x24 -nolisten tcp >/dev/null 2>&1 & XPID=$!
 for i in $(seq 40); do DISPLAY=:$D xdpyinfo >/dev/null 2>&1 && break; sleep 0.5; done
 before=$(ls /dev/input/)
 REC_CMD="ffmpeg -y -loglevel error -f x11grab -framerate 30 -video_size $RES -i :$D -c:v libx264 -preset ultrafast $OUT/{name}.mp4" \

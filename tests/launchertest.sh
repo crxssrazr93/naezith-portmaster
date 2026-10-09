@@ -1,6 +1,6 @@
 #!/bin/bash
 # Runs the real launcher (port/Remnants of Naezith.sh) on an x86_64 PC against a mock
-# PortMaster install: control.txt, mount/umount (symlinks), westonwrap.sh (rootful Xwayland
+# PortMaster install: control.txt, mount/umount (symlinks), westonwrap.sh (an offscreen Xvfb server (no window on the desktop)
 # with gl4es) and box64 (runs the x86_64 binary natively, mapping BOX64_LD_* to LD_*).
 # Checks the launcher's file handling, library setup and Steam stub wiring.
 #
@@ -27,7 +27,7 @@ cat > "$ROOT/weston/westonwrap.sh" <<EOW
 #!/bin/bash
 [ "\$1" = cleanup ] && { echo WESTON_CLEANUP; exit 0; }
 echo "WESTONWRAP args: \$1 \$2 \$3 \$4"; shift 4
-Xwayland :$D -geometry 640x480 -decorate >/dev/null 2>&1 & XP=\$!
+unset WAYLAND_DISPLAY; Xvfb :$D -screen 0 640x480x24 -nolisten tcp >/dev/null 2>&1 & XP=\$!
 for i in \$(seq 40); do DISPLAY=:$D xdpyinfo >/dev/null 2>&1 && break; sleep 0.5; done
 DISPLAY=:$D LIBGL_ES=2 LIBGL_GL=21 LD_LIBRARY_PATH="$GL4ES_LIB" env "\$@"   # args after the mode are VAR=value pairs, then the command
 kill \$XP; wait \$XP
