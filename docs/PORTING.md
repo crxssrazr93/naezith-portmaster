@@ -39,7 +39,7 @@ The stub contains no ownership or license checks and the game has no DRM to bypa
 
 `port/Remnants of Naezith.sh` follows the standard PortMaster structure:
 
-1. Checks that the game binary is present and warns on an unknown MD5 (other versions may work).
+1. Checks that the game binary is present.
 2. Renames `lib/libm.so.6`, `lib/libstdc++.so.6` and `lib/libsteam_api.so` to `*.disabled`. The first two are older than the device's and break symbol resolution (the game's own `naezith.sh` drops them too); the third is replaced by the stub.
 3. Mounts `weston_pkg_0.2` and starts `westonwrap.sh headless noop kiosk crusty_glx_gl4es` with box64 and the game, with `BOX64_LD_LIBRARY_PATH` (passed as a `VAR=value` argument to westonwrap) set to the stub first, then the game's libraries, then the bundled x86 libraries, and `BOX64_LD_PRELOAD` set to the stub.
 4. gptokeyb2 only supplies the PortMaster exit hotkey (Select + Start); the game reads the controller itself.
@@ -103,7 +103,7 @@ The launcher sets View Height 720 once on 480 line screens and leaves the player
 
 * Test on other devices: muOS, ArkOS, and screens other than 640x480.
 * If it runs slowly, the game's own settings (`fps_cap`, `render_parallax_layers`, `render_rgb_split`, `vsync` in `data/user/settings.cfg`) are the first things to try.
-* ROCKNIX with Panfrost: find the cause of the lockup entering a level (the memory log in the next report).
+* ROCKNIX with Panfrost on the RG351M: one lockup entering a level, without swap (the X55 runs on Panfrost).
 
 **ROCKNIX: "BOX64 Error: Loading needed libs".** ROCKNIX exports its own `BOX64_LD_LIBRARY_PATH=/usr/share/box64/lib`, and on a ROCKNIX x55 (libmali) the game started with that value instead of the port's, even though the launcher set it on `westonwrap.sh`'s environment (westonwrap sources PortMaster's control files again before it starts the game). box64 then could not find the game's x86 libraries. The launcher now passes the box64 settings as `VAR=value` arguments to `westonwrap.sh`, which applies them to the game's command itself, and sets `BOX64_LOG=1` so a log names any library that still fails to load.
 
@@ -114,6 +114,10 @@ The launcher sets View Height 720 once on 480 line screens and leaves the player
 
 **ROCKNIX with Panfrost: locked up entering a level.** Tester reports: ROCKNIX on an RG351P with libmali at 480x320 works. ROCKNIX on an RG351M with Panfrost (Mesa 26.2.2) showed the intro and menus, then locked up going into the game. With Panfrost, Westonpack's `westonwrap.sh` does not start Weston at all ("Rocknix (Panfrost/SD) detected, bypassing weston setup entirely!"): the game runs on the firmware's Xwayland with Mesa's desktop OpenGL (3.1) instead of gl4es, a path the port was never tested on. Westonpack's `NO_PANFROST_BYPASS=1` would make `westonwrap.sh` take the same Weston, crusty and gl4es setup as libmali. It was tried in the launcher and dropped untested: it is not the standard path, and it adds Weston and gl4es to the memory a device without swap has to hold.
 
-Other ports treat the bypass as the normal Panfrost path: Binding of Isaac Rebirth (box64, desktop OpenGL) runs on it and only adds Westonpack's input blocker back, and Hammerwatch, LUFTRAUSERS and Super Hexagon refuse libmali outright ("Switch to Panfrost"). None sets `NO_PANFROST_BYPASS`. The port stays on that standard path, and the lockup is particular to this game on Mesa's desktop OpenGL or to that device. One candidate is memory: the RG351M had no swap and 706 MB available at launch, and the game holds about 600 MB in the first level (RG35XX H). The launcher therefore logs the available memory and the game's RSS every 15 seconds while it runs, so the next report shows whether memory ran out.
+Other ports treat the bypass as the normal Panfrost path: Binding of Isaac Rebirth (box64, desktop OpenGL) runs on it and only adds Westonpack's input blocker back, and Hammerwatch, LUFTRAUSERS and Super Hexagon refuse libmali outright ("Switch to Panfrost"). None sets `NO_PANFROST_BYPASS`. The port stays on that standard path, and the lockup is particular to this game on Mesa's desktop OpenGL or to that device. One candidate is memory: the RG351M had no swap and 706 MB available at launch, and the game holds about 600 MB in the first level (RG35XX H). A later tester ran the game on an X55 with both libmali and Panfrost without problems, so the standard path stays.
 
 The PC harness could not reproduce it: since the move to Xvfb (software GLX) the game stays on its first "Loading" screen with gl4es and with Mesa's desktop OpenGL alike, so `tests/localtest.sh` no longer reaches the menu. It needs a GPU backed offscreen server (for example gamescope's headless backend) instead.
+
+### Launcher clean up before the PortMaster PR
+
+The diagnostics helper `tools/portlog.sh` (device, memory and pad report lines, an exit report), the log rotation to `log.prev.txt`, the game version check, the 15 second memory log and box64's debug logging were removed so the launcher follows merged ports. What stayed is what fixes a reported problem: the relative `tee` path (AmberELEC quit), the pad detection (RG552 D-pad and Start), gptokeyb2 on muOS, the box64 settings as `westonwrap.sh` arguments (ROCKNIX), and the game specific setup (libraries, folders, View Height, offline text).

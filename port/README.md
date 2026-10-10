@@ -29,14 +29,14 @@ Bindings can be changed in Settings, Controls. Select + Start exits.
 * On 480 line screens the port sets View Height (Settings, Graphics) to 720 on first start, so the level and its text are larger. Raise it to see more of the level.
 * Runs through box64 and Westonpack with gl4es. Saves are in `gamedata/data/user`.
 * Online rankings are unavailable, the game runs in offline mode.
-* Needs Panfrost on Rocknix.
+* ROCKNIX: works with libmali and Panfrost. If the game locks up entering a level on a device without swap, turn on swap or zram.
 * On pads whose D-pad sends buttons instead of a hat (the RG552 on AmberELEC), the port maps the D-pad to the arrow keys and Start to Escape (Pause).
 * On 4:3 screens a few menu labels overlap.
 * `steamstub/` only reports Steam as running and does no license checks.
 
 ## Reporting problems
 
-Please send `ports/naezith/log.txt`. `log.txt` is rewritten on every start and the run before it is kept as `log.prev.txt` (the setup log likewise), so send both if the game was started again after the problem. Lines starting with `PORT:` list the device, firmware, screen, memory and swap, the game version, and at the end how long the game ran and whether the system ran out of memory.
+Please send `ports/naezith/log.txt` (rewritten on every start).
 
 ## Thanks
 

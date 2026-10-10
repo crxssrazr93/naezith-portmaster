@@ -22,32 +22,18 @@ get_controls
 GAMEDIR=/$directory/ports/naezith
 DATADIR=$GAMEDIR/gamedata
 BINARY="naezith"
-KNOWN_MD5="f18add699bbc6c73a8521438139ac147"
 
 cd "$GAMEDIR"
 
-# the previous run's log is kept as log.prev.txt
-mv -f "$GAMEDIR/log.txt" "$GAMEDIR/log.prev.txt" 2>/dev/null
 # tee gets a relative path: gptokeyb's exit hotkey runs pkill -f naezith, which matches every
 # command line containing the word, and a tee writing to .../naezith/log.txt died with the game,
 # ending the log and then the launcher (AmberELEC reports that exit as an error)
 > "$GAMEDIR/log.txt" && exec > >(tee log.txt) 2>&1
-# Device, system and memory details for bug reports (tools/portlog.sh)
-# The files a bug report needs; named in log.txt and on screen only when something fails
-export PORT_REPORT_FILES="ports/naezith/log.txt"
-source "$GAMEDIR/tools/portlog.sh"
-port_header "Remnants of Naezith launcher"
 
 if [ ! -f "$DATADIR/$BINARY" ]; then
   pm_message "Game files missing. Copy the Linux Steam build of Remnants of Naezith into ports/naezith/gamedata (see README)."
   sleep 5
   exit 1
-fi
-
-if [ "$(md5sum "$DATADIR/$BINARY" | cut -d' ' -f1)" != "$KNOWN_MD5" ]; then
-  port_log "WARNING: unknown game version (md5 $(md5sum "$DATADIR/$BINARY" | cut -c1-32)), this port was tested with the 22.03.2024 Linux build"
-else
-  port_log "game version: 22.03.2024 Linux build (md5 matches)"
 fi
 
 # Tidy up gamedata: the bundled libm and libstdc++ break on newer systems (the game's own
@@ -74,7 +60,6 @@ if [[ "$PM_CAN_MOUNT" != "N" ]]; then
   $ESUDO umount "${weston_dir}"
 fi
 $ESUDO mount "$controlfolder/libs/${weston_runtime}.squashfs" "${weston_dir}"
-port_mounted "$weston_runtime" "$weston_dir/westonwrap.sh"
 
 # ROCKNIX: with libmali westonwrap runs Weston and gl4es as on other firmwares; with Panfrost it
 # skips Weston and runs the game on the firmware's own desktop OpenGL (Mesa), as for every
@@ -97,7 +82,6 @@ for ev in /sys/class/input/event*/device; do
   abs="$(awk '{ print $NF }' "$ev/capabilities/abs" 2>/dev/null)"
   if [ $(( 0x${abs:-0} & 0x10000 )) -eq 0 ]; then
     pad_map+='s/^up = .*/up = up/;s/^down = .*/down = down/;s/^left = .*/left = left/;s/^right = .*/right = right/;'
-    port_log "the pad has no hat axes, so the D-pad is mapped to the arrow keys"
   fi
   # BTN_START is 0x13b: bit 59 of the fifth 64 bit word, counted from the end of the bitmap
   keys=($(cat "$ev/capabilities/key" 2>/dev/null))
@@ -105,7 +89,6 @@ for ev in /sys/class/input/event*/device; do
   [ ${#keys[@]} -ge 5 ] && word="${keys[${#keys[@]} - 5]}"
   if [ $(( (0x$word >> 59) & 1 )) -eq 0 ]; then
     pad_map+='s/^start = .*/start = esc/;'
-    port_log "the pad has no BTN_START, so Start is mapped to Escape"
   fi
   break
 done
@@ -154,23 +137,13 @@ REAL_XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 # box64's settings go to westonwrap as VAR=value arguments, which it puts on the game's command
 # line: westonwrap sources PortMaster's control files first, and on ROCKNIX the game then started
 # with the firmware's BOX64_LD_LIBRARY_PATH (/usr/share/box64/lib) instead of the port's, so box64
-# could not find the game's libraries. BOX64_LOG=1 names a library that fails to load.
-port_log "starting the game"
-# memory every 15 s while the game runs: a lockup on a device without swap is often memory
-( while sleep 15; do
-    port_mem "running, game RSS $(awk '/^VmRSS/ { print int($2 / 1024) " MB" }' /proc/$(pgrep -n -x "$BINARY")/status 2>/dev/null)"
-  done ) &
-memwatch=$!
+# could not find the game's libraries.
 $ESUDO $weston_dir/westonwrap.sh headless noop kiosk crusty_glx_gl4es \
-  BOX64_LOG=1 BOX64_SHOWSEGV=1 BOX64_SHOWBT=1 \
   BOX64_LD_LIBRARY_PATH="$GAMEDIR/steamstub:$DATADIR/lib:$GAMEDIR/box64/box64-x86_64-linux-gnu" \
   BOX64_LD_PRELOAD="$GAMEDIR/steamstub/libsteam_api.so:$GAMEDIR/glxfix/libglxfix.so" \
   XDG_RUNTIME_DIR="$REAL_XDG_RUNTIME_DIR" $GAMEDIR/box64/box64 ./$BINARY
 
-kill $memwatch 2>/dev/null
-
 # Clean up after ourselves
-port_exit
 $ESUDO $weston_dir/westonwrap.sh cleanup
 if [[ "$PM_CAN_MOUNT" != "N" ]]; then
   $ESUDO umount "${weston_dir}"

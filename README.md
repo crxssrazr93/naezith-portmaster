@@ -7,7 +7,7 @@ The port runs the game's own x86_64 Linux build. No game files are included: you
 | | |
 |--|--|
 | Status | Runs on an Anbernic RG35XX H (Knulli): about 37 fps in levels, 60 in menus, sound and controls working. |
-| Tester reports | Works on an RG40XX-H (muOS) and an R36S (dArkOS), controls as expected. |
+| Tester reports | Works on an RG40XX-H (muOS), R36S (dArkOS and AmberELEC), RG552 (AmberELEC), RG351P (ROCKNIX, libmali, 480x320) and X55 (ROCKNIX, libmali and Panfrost). |
 | Target | aarch64 PortMaster devices (Knulli, muOS, ROCKNIX, ArkOS and others), 1 GB RAM or more |
 | Runtimes | Westonpack (`weston_pkg_0.2`), bundled box64 |
 | Memory | about 600 MB on the device (box64, gl4es and the GPU share RAM), about 190 MB natively on a PC |
@@ -97,7 +97,7 @@ tests/device/knulli.sh 'python3 /userdata/system/devpad.py "chord SELECT START"'
 
 * Online features (global rankings, score submission) are unavailable; the game runs in its own offline mode.
 * The interface scales with the screen height and has no separate scale setting. On 480x320 screens the smallest menu text is hard to read. On 4:3 and square screens a few labels on the level map overlap and the offline notice is cut off at the right edge.
-* ROCKNIX: works with libmali (RG351P, 480x320). With Panfrost (Westonpack runs the game on the firmware's own OpenGL, as for every Westonpack port) a tester's RG351M locked up entering a level; the launcher now logs memory to find out why.
+* ROCKNIX: works with libmali and Panfrost (X55, RG351P at 480x320). One RG351M with Panfrost and no swap locked up entering a level; turn on swap or zram on 1 GB devices.
 
 ## Credits and licenses
 
