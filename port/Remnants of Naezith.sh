@@ -76,9 +76,13 @@ fi
 $ESUDO mount "$controlfolder/libs/${weston_runtime}.squashfs" "${weston_dir}"
 port_mounted "$weston_runtime" "$weston_dir/westonwrap.sh"
 
-# rocknix mode on rocknix panfrost/freedreno; libmali not supported
+# ROCKNIX: on Panfrost, Westonpack by default skips Weston and gl4es and runs the game on the
+# firmware's own desktop OpenGL (Mesa), where it locked up entering a level (RG351M) although the
+# menus worked. NO_PANFROST_BYPASS=1 keeps the Weston and gl4es path the port is tested on, which
+# ROCKNIX with libmali takes anyway.
 if [[ "$CFW_NAME" = "ROCKNIX" ]]; then
   export rocknix_mode=1
+  export NO_PANFROST_BYPASS=1
 fi
 
 # The game reads the controller natively (SFML joystick); gptokeyb only provides the exit hotkey.

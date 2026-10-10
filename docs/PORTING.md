@@ -101,9 +101,9 @@ The launcher sets View Height 720 once on 480 line screens and leaves the player
 
 ## 7. Still to do
 
-* Test on other devices: ROCKNIX with Panfrost, muOS, ArkOS, and screens other than 640x480.
+* Test on other devices: muOS, ArkOS, and screens other than 640x480.
 * If it runs slowly, the game's own settings (`fps_cap`, `render_parallax_layers`, `render_rgb_split`, `vsync` in `data/user/settings.cfg`) are the first things to try.
-* Confirm on ROCKNIX with Panfrost.
+* Confirm on ROCKNIX with Panfrost now that it takes the Weston and gl4es path.
 
 **ROCKNIX: "BOX64 Error: Loading needed libs".** ROCKNIX exports its own `BOX64_LD_LIBRARY_PATH=/usr/share/box64/lib`, and on a ROCKNIX x55 (libmali) the game started with that value instead of the port's, even though the launcher set it on `westonwrap.sh`'s environment (westonwrap sources PortMaster's control files again before it starts the game). box64 then could not find the game's x86 libraries. The launcher now passes the box64 settings as `VAR=value` arguments to `westonwrap.sh`, which applies them to the game's command itself, and sets `BOX64_LOG=1` so a log names any library that still fails to load.
 
@@ -111,3 +111,5 @@ The launcher sets View Height 720 once on 480 line screens and leaves the player
 
 * The RG552's pad ("GO-Super Gamepad") has no hat axes: its D-pad sends buttons (BTN_DPAD_UP to RIGHT), and Select and Start are BTN_TRIGGER_HAPPY codes, so through the joystick driver the D-pad arrives as buttons 8 to 11 and R2 as button 7, the game's Pause. The game reads the D-pad from the hat only. The launcher reads the first joystick's capability bitmaps: with no hat axis it maps the D-pad to the arrow keys, and with no BTN_START it maps Start to Escape (the game's keyboard Pause and Back), writing the result to `naezith.pad.gptk`. Pads with a hat and BTN_START (the RG35XX H) keep `naezith.gptk` unchanged, so they get no doubled input.
 * gptokeyb's exit hotkey runs `pkill -f naezith`, then `pkill -9 -f naezith` three seconds later. That matches every command line containing the word, including the `tee` writing `/roms/ports/naezith/log.txt`. The log stopped at the game's last line, the launcher then died on the broken pipe before its exit lines, and AmberELEC shows "A general error has occurred" and zips its logs whenever a port script exits with a nonzero code. The same happened on Knulli, where it went unnoticed because test runs were ended with EmulationStation's emukill. `tee` now gets a relative path (the launcher has already changed to the port folder), so it no longer matches; reproduced and confirmed on the RG35XX H by sending the hotkey's exact pkill sequence.
+
+**ROCKNIX with Panfrost: locked up entering a level.** Tester reports: ROCKNIX on an RG351P with libmali at 480x320 works. ROCKNIX on an RG351M with Panfrost (Mesa 26.2.2) showed the intro and menus, then locked up going into the game. With Panfrost, Westonpack's `westonwrap.sh` does not start Weston at all ("Rocknix (Panfrost/SD) detected, bypassing weston setup entirely!"): the game runs on the firmware's Xwayland with Mesa's desktop OpenGL (3.1) instead of gl4es, a path the port was never tested on. The launcher now exports `NO_PANFROST_BYPASS=1` on ROCKNIX, which makes `westonwrap.sh` take the same Weston, crusty and gl4es setup as libmali. Not yet confirmed on a Panfrost device.
