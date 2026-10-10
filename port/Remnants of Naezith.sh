@@ -79,10 +79,10 @@ port_mounted "$weston_runtime" "$weston_dir/westonwrap.sh"
 # ROCKNIX: on Panfrost, Westonpack by default skips Weston and gl4es and runs the game on the
 # firmware's own desktop OpenGL (Mesa), where it locked up entering a level (RG351M) although the
 # menus worked. NO_PANFROST_BYPASS=1 keeps the Weston and gl4es path the port is tested on, which
-# ROCKNIX with libmali takes anyway.
+# ROCKNIX with libmali takes anyway (NO_PANFROST_BYPASS=0 in the environment restores the bypass).
 if [[ "$CFW_NAME" = "ROCKNIX" ]]; then
   export rocknix_mode=1
-  export NO_PANFROST_BYPASS=1
+  export NO_PANFROST_BYPASS="${NO_PANFROST_BYPASS:-1}"
 fi
 
 # The game reads the controller natively (SFML joystick); gptokeyb only provides the exit hotkey.
@@ -158,11 +158,18 @@ REAL_XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 # with the firmware's BOX64_LD_LIBRARY_PATH (/usr/share/box64/lib) instead of the port's, so box64
 # could not find the game's libraries. BOX64_LOG=1 names a library that fails to load.
 port_log "starting the game"
+# memory every 15 s while the game runs: a lockup on a device without swap is often memory
+( while sleep 15; do
+    port_mem "running, game RSS $(awk '/^VmRSS/ { print int($2 / 1024) " MB" }' /proc/$(pgrep -n -x "$BINARY")/status 2>/dev/null)"
+  done ) &
+memwatch=$!
 $ESUDO $weston_dir/westonwrap.sh headless noop kiosk crusty_glx_gl4es \
   BOX64_LOG=1 BOX64_SHOWSEGV=1 BOX64_SHOWBT=1 \
   BOX64_LD_LIBRARY_PATH="$GAMEDIR/steamstub:$DATADIR/lib:$GAMEDIR/box64/box64-x86_64-linux-gnu" \
   BOX64_LD_PRELOAD="$GAMEDIR/steamstub/libsteam_api.so:$GAMEDIR/glxfix/libglxfix.so" \
   XDG_RUNTIME_DIR="$REAL_XDG_RUNTIME_DIR" $GAMEDIR/box64/box64 ./$BINARY
+
+kill $memwatch 2>/dev/null
 
 # Clean up after ourselves
 port_exit
