@@ -97,7 +97,7 @@ tests/device/knulli.sh 'python3 /userdata/system/devpad.py "chord SELECT START"'
 
 * Online features (global rankings, score submission) are unavailable; the game runs in its own offline mode.
 * The interface scales with the screen height and has no separate scale setting. On 480x320 screens the smallest menu text is hard to read. On 4:3 and square screens a few labels on the level map overlap and the offline notice is cut off at the right edge.
-* ROCKNIX: works with libmali (RG351P, 480x320). With Panfrost the game ran on the firmware's own OpenGL and locked up entering a level; the launcher now keeps Westonpack's Weston and gl4es path there too (not yet confirmed on a Panfrost device).
+* ROCKNIX: works with libmali (RG351P, 480x320). With Panfrost (Westonpack runs the game on the firmware's own OpenGL, as for every Westonpack port) a tester's RG351M locked up entering a level; the launcher now logs memory to find out why.
 
 ## Credits and licenses
 
