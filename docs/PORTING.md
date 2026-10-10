@@ -101,11 +101,10 @@ The launcher sets View Height 720 once on 480 line screens and leaves the player
 
 ## 7. Still to do
 
-* Test on other devices: muOS, ArkOS, and screens other than 640x480.
+* Stock ArkOS and Crossmix have not been tested (testers covered muOS, dArkOS, AmberELEC, ROCKNIX with both drivers and Knulli, from 480x320 to 1280x720).
 * If it runs slowly, the game's own settings (`fps_cap`, `render_parallax_layers`, `render_rgb_split`, `vsync` in `data/user/settings.cfg`) are the first things to try.
-* ROCKNIX with Panfrost on the RG351M: one lockup entering a level, without swap (the X55 runs on Panfrost).
 
-**ROCKNIX: "BOX64 Error: Loading needed libs".** ROCKNIX exports its own `BOX64_LD_LIBRARY_PATH=/usr/share/box64/lib`, and on a ROCKNIX x55 (libmali) the game started with that value instead of the port's, even though the launcher set it on `westonwrap.sh`'s environment (westonwrap sources PortMaster's control files again before it starts the game). box64 then could not find the game's x86 libraries. The launcher now passes the box64 settings as `VAR=value` arguments to `westonwrap.sh`, which applies them to the game's command itself, and sets `BOX64_LOG=1` so a log names any library that still fails to load.
+**ROCKNIX: "BOX64 Error: Loading needed libs".** ROCKNIX exports its own `BOX64_LD_LIBRARY_PATH=/usr/share/box64/lib`, and on a ROCKNIX x55 (libmali) the game started with that value instead of the port's, even though the launcher set it on `westonwrap.sh`'s environment (westonwrap sources PortMaster's control files again before it starts the game). box64 then could not find the game's x86 libraries. The launcher now passes the box64 settings as `VAR=value` arguments to `westonwrap.sh`, which applies them to the game's command itself.
 
 **AmberELEC on the RG552: no D-pad, and an error message on quit.** Two separate causes.
 
