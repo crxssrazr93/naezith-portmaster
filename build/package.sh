@@ -6,7 +6,10 @@ R="$(cd "$(dirname "$0")/.." && pwd)"
 [ -x "$R/port/naezith/box64/box64" ] || { echo "run build/build.sh first"; exit 1; }
 stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
-cp "$R/port/Remnants of Naezith.sh" "$stage/"
+# Release zips carry the "# PORTMASTER:" line that PortMaster's own build adds; without it
+# harbourmaster inserts it into the launcher on its first runtime download, even while it runs.
+{ head -n 1 "$R/port/Remnants of Naezith.sh"; echo "# PORTMASTER: naezith.zip, Remnants of Naezith.sh"; tail -n +2 "$R/port/Remnants of Naezith.sh"; } > "$stage/Remnants of Naezith.sh"
+chmod 755 "$stage/Remnants of Naezith.sh"
 cp -r "$R/port/naezith" "$stage/"
 rm -rf "$stage/naezith/gamedata" "$stage/naezith/log.txt" "$stage/naezith/naezith.pad.gptk"
 mkdir "$stage/naezith/gamedata"
